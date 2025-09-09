@@ -40,16 +40,18 @@ const StoryViewer = ({viewStory, setViewStory}) => {
 
     if(!viewStory) return null
 
+    console.log("viewStory data:", viewStory);
+
     const renderContent = () => {
         switch (viewStory.media_type){
             case 'image':
                 return (
-                    <img src={viewStory.media_url} alt="" className="max-w-full
+                    <img src={viewStory.media_urls} alt="" className="max-w-full
                     max-h-screen object-contain"/>
                 );
             case 'video':
                 return (
-                    <video onEnded={() => setViewStory(null)} src={viewStory.media_url} 
+                    <video onEnded={() => setViewStory(null)} src={viewStory.media_urls} 
                     className="max-h-screen" controls autoPlay/>
                 );
             case 'text':

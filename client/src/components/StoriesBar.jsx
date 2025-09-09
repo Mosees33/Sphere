@@ -4,15 +4,33 @@ import { Plus } from "lucide-react";
 import moment from "moment";
 import StoryModal from "./StoryModal";
 import StoryViewer from "./StoryViewer";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const StoriesBar = () => {
+
+    const { getToken } = useAuth()
+
     const [stories, setStories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [viewStory, setViewStory] = useState(null);
 
 
     const fetchStories = async () => {
-        setStories(dummyStoriesData);
+        try{
+            const token = await getToken()
+            const { data } = await api.get('/api/story/get', {
+                headers: { Authorization: `Bearer ${token}`}
+            })
+            if(data.success){
+                setStories(data.stories)
+            }else{
+                toast(data.message)
+            }
+        }catch(error){
+            toast.error(error.message)
+        }
     };
 
     useEffect(() => {
@@ -76,12 +94,13 @@ const StoriesBar = () => {
                         </p>
                         {story.media_type !== "text" && (
                             <div
-                                className="absolute inset-0 z-1
-                                    rounded-lg bg-black overflow-hidden"
+                                // className="absolute inset-0 z-1
+                                //     rounded-lg bg-black/20 overflow-hidden"
+                                className="absolute inset-0 rounded-lg overflow-hidden"
                             >
                                 {story.media_type === "image" ? (
                                     <img
-                                        src={story.media_url}
+                                        src={story.media_urls}
                                         alt=""
                                         className="h-full w-full object-cover
                                 hover:scale-110 transition duration-500
@@ -89,7 +108,7 @@ const StoriesBar = () => {
                                     />
                                 ) : (
                                     <video
-                                        src={story.media_url}
+                                        src={story.media_urls}
                                         className="h-full w-full object-cover
                                 hover:scale-110 transition duration-500
                                 opacity-70 hover:opacity-80"

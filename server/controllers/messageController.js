@@ -64,6 +64,7 @@ export const sendMessage = async (req, res) => {
             media_url
         })
 
+
         res.json({ success: true, message });
 
         //Send message to to_user_id using SSE
@@ -73,7 +74,6 @@ export const sendMessage = async (req, res) => {
         if(connections[to_user_id]){
             connections[to_user_id].write(`data: ${JSON.stringify(messageWithUserData)}\n\n`)
         }
-
     }catch(error){
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -98,7 +98,7 @@ export const GetChatMessages = async (req, res)=> {
         res.json({ success: true, messages });
 
 
-    }catch{
+    }catch(error){
         res.json({ success: false, message: error.message });
     }
 }
@@ -106,11 +106,11 @@ export const GetChatMessages = async (req, res)=> {
 export const getUserRecentMessages = async (req, res)=> {
     try{
         const { userId } = req.auth();
-        const messages = await Message.find({to_user_id: userId}.populate('from_user_id to_user_id')).sort({created_at: -1 });
+        const messages = await Message.find({to_user_id: userId}).populate('from_user_id to_user_id').sort({created_at: -1 });
 
         res.json({ success: true, messages });
 
-    } catch{
+    } catch(error){
         res.json({ success: false, message: error.message });
     }
 }

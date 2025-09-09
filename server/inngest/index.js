@@ -2,6 +2,8 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Connection from "../models/Connection.js";
 import Message from "../models/Message.js";
+import Story from "../models/Story.js";
+import sendEmail from "../configs/nodeMailer.js"
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "sphere-app" });
@@ -52,7 +54,7 @@ const syncUserUpdation = inngest.createFunction(
 
 // Inngest Function to delete user from database
 const syncUserDeletion = inngest.createFunction(
-    {id: 'delete-user-from-clerk'},
+    {id: 'delete-user-with-clerk'},
     {event: 'clerk/user.deleted'},
     async ({event})=>{
         const {id} = event.data

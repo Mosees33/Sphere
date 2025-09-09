@@ -3,17 +3,76 @@ import moment from "moment"
 import { useState } from "react"
 import { dummyUserData } from "../assets/assets"
 import { useNavigate } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { useAuth } from '@clerk/clerk-react'
+import api from "../api/axios"
+import toast from "react-hot-toast"
 
 const PostCard = ({post}) => {
 
     const postWithHashtags = post.content.replace(/(#\w+)/g, 
     '<span class="text-indigo-600 cursor-pointer">$1</span>')
     const [likes, setLikes] = useState(post.likes_count)
-    const currentUser = dummyUserData
+    const currentUser = useSelector((state) => state.user.value)
+
+    const { getToken } = useAuth ()
+
+    // const handleLike = async () => {
+    //     try {
+    //         const {data} = await api.post('/api/post/like', {postId: post._id},
+    //         {headers: { Authorization: `Bearer ${await getToken()}` }})
+
+    //         if(data.success){
+    //             toast.success(data.message)
+    //             setLikes(prev => {
+    //                 if(prev.includes(currentUser._id)){
+    //                     return prev.filter(id => id !== currentUser._id)
+    //                 }else{
+    //                     return [...prev, currentUser._id]
+    //                 }
+    //             })
+    //         }else{
+    //             toast(data.message)
+    //         }
+    //     } catch (error) {
+    //         toast.error(error.message)
+    //     }
+    // }
 
     const handleLike = async () => {
+    const hasLiked = likes.includes(currentUser._id); // check current state
+    const previousLikes = [...likes]; // save previous state for rollback
 
+    // Optimistically toggle
+    setLikes(prev => hasLiked 
+        ? prev.filter(id => id !== currentUser._id)
+        : [...prev, currentUser._id]
+    );
+
+    try {
+        const token = await getToken();
+        const { data } = await api.post(
+            '/api/post/like',
+            { postId: post._id },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (data.success) {
+            toast.success(hasLiked ? "Post Unliked" : "Post Liked"); // show based on action
+        } else {
+            // rollback on failure
+            setLikes(previousLikes);
+            toast.error(data.message);
+        }
+    } catch (error) {
+        // rollback on error
+        setLikes(previousLikes);
+        toast.error(error.response?.data?.message || error.message);
     }
+};
+
+
+
 
     const navigate = useNavigate()
 

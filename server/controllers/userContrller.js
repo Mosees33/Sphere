@@ -158,10 +158,12 @@ export const UnfollowUser = async (req, res) => {
 
         const user = await User.findById(userId)
         user.following = user.following.filter(user=> user !== id);
+        // user.connections = user.connections.filter(user => user !== id);
         await user.save()
 
         const toUser = await User.findById(id)
         toUser.followers = toUser.followers.filter(user=> user !== userId);
+        // toUser.connections = toUser.connections.filter(user => user !== userId);
         await toUser.save()
 
         res.json({success: true, message: 'You are no longer following this user'})
@@ -246,7 +248,7 @@ export const acceptConnectionRequest = async (req, res) => {
         const {userId} = req.auth()
         const {id} = req.body;
 
-        const connection = await connection.findOne({from_user_id: id, to_user_id: userId})
+        const connection = await Connection.findOne({from_user_id: id, to_user_id: userId})
 
         if(!connection){
             return res.json({ success: false, message: 'Connection not found' })
